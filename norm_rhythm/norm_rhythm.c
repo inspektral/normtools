@@ -14,6 +14,7 @@ typedef struct _norm_rhythm
 	t_object ob;			// the object itself (must be first)
 	double mu;
 	double sigma;
+	double count;
 	void* m_outlet1;
 } t_norm_rhythm;
 
@@ -54,10 +55,11 @@ void norm_rhythm_free(t_norm_rhythm *x)
 void *norm_rhythm_new()
 {
 	t_norm_rhythm *x = (t_norm_rhythm*)object_alloc(norm_rhythm_class);
-	x->m_outlet1 = floatout(x);
+	x->m_outlet1 = bangout(x);
 	floatin(x, 1);
 	x->mu = 0;
 	x->sigma = 1;
+	x->count = 0;
 	return (x);
 }
 
@@ -66,13 +68,17 @@ void norm_rhythm_ft1(t_norm_rhythm* x, double f) {
 }
 
 void norm_rhythm_bang(t_norm_rhythm* x) {
-	outlet_float(x->m_outlet1, randn(x->mu, x->sigma));
+	if (x->count == 0) {
+		// TODO bang
+		x->count = round(randn(x->mu, x->sigma));
+	}
+	else {
+		x->count--;
+	}
 }
 
 void norm_rhythm_mu(t_norm_rhythm* x, double new_mu) {
 	x->mu = new_mu;
-	double r = randn(x->mu, x->sigma);
-	outlet_float(x->m_outlet1, r);
 }
 
 void norm_rhythm_sigma(t_norm_rhythm* x, double new_sigma) {
