@@ -1,15 +1,11 @@
 /**
-	@file
-	norm - a max object shell
-	jeremy bernstein - jeremy@bootsquad.com
-
-	@ingroup	examples
+	norm_random_note
+	tito scutari
 */
 #define MAXAPI_USE_MSCRT
 
 #include "ext.h"							// standard Max include, always required
 #include "ext_obex.h"						// required for new style Max object
-#include "norm_lib.h"
 #include <stdlib.h>
 
 ////////////////////////// object struct
@@ -28,6 +24,7 @@ void norm_ft1(t_norm* x, double f);
 void norm_bang(t_norm* x);
 void norm_mu(t_norm* x, double new_mu);
 void norm_sigma(t_norm* x, double new_sigma);
+double randn(double mu, double sigma);
 
 //////////////////////// global class pointer variable
 void *norm_class;
@@ -80,4 +77,33 @@ void norm_mu(t_norm* x, double new_mu) {
 
 void norm_sigma(t_norm* x, double new_sigma) {
 	x->sigma = new_sigma;
+}
+
+// tobe lib
+
+double randn(double mu, double sigma) {
+	double U1, U2, W, mult;
+	static double X1, X2;
+	static int call = 0;
+
+	if (call == 1)
+	{
+		call = !call;
+		return (mu + sigma * (double)X2);
+	}
+
+	do
+	{
+		U1 = -1 + ((double)rand() / RAND_MAX) * 2;
+		U2 = -1 + ((double)rand() / RAND_MAX) * 2;
+		W = pow(U1, 2) + pow(U2, 2);
+	} while (W >= 1 || W == 0);
+
+	mult = sqrt((-2 * log(W)) / W);
+	X1 = U1 * mult;
+	X2 = U2 * mult;
+
+	call = !call;
+
+	return (mu + sigma * (double)X1);
 }

@@ -1,9 +1,6 @@
 /**
-	@file
-	norm_random_note - a max object shell
-	jeremy bernstein - jeremy@bootsquad.com
-
-	@ingroup	examples
+	norm_random_note
+	tito scutari
 */
 #define MAXAPI_USE_MSCRT
 
@@ -136,7 +133,7 @@ void set_sigma_2(t_norm_random_note* x, double new_sigma) {
 }
 
 
-// UTILS 
+// lib tobe
 double randn(double mu, double sigma) {
 	double U1, U2, W, mult;
 	static double X1, X2;
