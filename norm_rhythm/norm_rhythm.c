@@ -68,7 +68,7 @@ void norm_rhythm_ft1(t_norm_rhythm* x, double f) {
 }
 
 void norm_rhythm_bang(t_norm_rhythm* x) {
-	if (x->count == 0) {
+	if (x->count == 0.0) {
 		// TODO bang
 		x->count = round(randn(x->mu, x->sigma));
 	}

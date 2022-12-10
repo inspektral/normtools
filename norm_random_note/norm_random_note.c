@@ -19,7 +19,6 @@ typedef struct _norm_random_note
 	double mu_2;
 	double sigma_2;
 	void* m_outlet1;
-	double tol;
 } t_norm_random_note;
 
 ///////////////////////// function prototypes
@@ -44,7 +43,6 @@ void set_sigma_2(t_norm_random_note* x, double new_sigma);
 
 // utils
 double randn(double mu, double sigma);
-double round_tolerance(double to_round, double tolerance);
 double random_note(t_norm_random_note* x);
 
 //////////////////////// global class pointer variable
@@ -84,7 +82,6 @@ void *norm_random_note_new()
 	floatin(x, 3);
 	floatin(x, 4);
 
-	x->tol = pow(2.0, 0.08333333333);
 	x->ft = 1;
 	x->mu_1 = 0;
 	x->sigma_1 = 1;
@@ -109,12 +106,12 @@ void norm_random_note_ft4(t_norm_random_note* x, double f) {
 
 // TRIGGERS
 void norm_random_note_bang(t_norm_random_note* x) {
-	outlet_float(x->m_outlet1, x->ft*random_note(x));
+	outlet_float(x->m_outlet1, x->ft + random_note(x));
 }
 
 void norm_random_note_float(t_norm_random_note* x, double f) {
 	x->ft = f;
-	outlet_float(x->m_outlet1, x->ft * random_note(x));
+	outlet_float(x->m_outlet1, x->ft + random_note(x));
 }
 
 
@@ -161,13 +158,12 @@ double randn(double mu, double sigma) {
 	return (mu + sigma * (double)X1);
 }
 
-double round_tolerance(double to_round, double tolerance) {
-	return tolerance * roundf(to_round / tolerance);
-}
-
 double random_note(t_norm_random_note* x) {
-	double a = ceilf(fabsf(randn(x->mu_1, x->sigma_1)));
-	double b = ceilf(fabsf(randn(x->mu_2, x->sigma_2)));
+	const double base = pow(2., (1. / 12.));
 	
-	return a / b;
+	double a = fmax(1.,ceil(randn(x->mu_1, x->sigma_1)));
+	double b = fmax(1.,ceil(randn(x->mu_2, x->sigma_2)));
+
+	double ratio = fabs(a / b);
+	return round(log(ratio) / log(base));
 }
