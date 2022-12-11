@@ -2,7 +2,10 @@
 	norm_random_note
 	tito scutari
 */
+#ifndef MAXAPI_USE_MSCRT
 #define MAXAPI_USE_MSCRT
+#endif // !MAXAPI_USE_MSCRT
+
 
 #include "ext.h"							// standard Max include, always required
 #include "ext_obex.h"						// required for new style Max object
@@ -28,8 +31,6 @@ void norm_random_note_free();
 // inlets that call setters
 void norm_random_note_ft1(t_norm_random_note* x, double f);
 void norm_random_note_ft2(t_norm_random_note* x, double f);
-void norm_random_note_ft3(t_norm_random_note* x, double f);
-void norm_random_note_ft4(t_norm_random_note* x, double f);
 
 // triggers
 void norm_random_note_bang(t_norm_random_note* x);
@@ -44,6 +45,8 @@ void set_sigma_2(t_norm_random_note* x, double new_sigma);
 // utils
 double randn(double mu, double sigma);
 double random_note(t_norm_random_note* x);
+double sigmoid(double x);
+void log_status(t_norm_random_note* x);
 
 //////////////////////// global class pointer variable
 void *norm_random_note_class;
@@ -61,8 +64,6 @@ void ext_main(void *r)
 
 	class_addmethod(c, (method)norm_random_note_ft1, "ft1", A_FLOAT, 0);
 	class_addmethod(c, (method)norm_random_note_ft2, "ft2", A_FLOAT, 0);
-	class_addmethod(c, (method)norm_random_note_ft3, "ft3", A_FLOAT, 0);
-	class_addmethod(c, (method)norm_random_note_ft4, "ft4", A_FLOAT, 0);
 
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
 	norm_random_note_class = c;
@@ -76,13 +77,11 @@ void norm_random_note_free(t_norm_random_note *x)
 void *norm_random_note_new()
 {
 	t_norm_random_note *x = (t_norm_random_note*)object_alloc(norm_random_note_class);
-	x->m_outlet1 = floatout(x);
-	floatin(x, 1);
+	x->m_outlet1 = floatout((t_object *)x);
 	floatin(x, 2);
-	floatin(x, 3);
-	floatin(x, 4);
+	floatin(x, 1);
 
-	x->ft = 1;
+	x->ft = 0;
 	x->mu_1 = 0;
 	x->sigma_1 = 1;
 	x->mu_2 = 0;
@@ -92,21 +91,20 @@ void *norm_random_note_new()
 
 // inlets
 void norm_random_note_ft1(t_norm_random_note* x, double f) {
-	set_mu_1(x, f);
+	set_mu_1(x, 3*sigmoid(f));
+	set_mu_2(x, 3*sigmoid(-f));
+	log_status(x);
 }
 void norm_random_note_ft2(t_norm_random_note* x, double f) {
 	set_sigma_1(x, f);
-}
-void norm_random_note_ft3(t_norm_random_note* x, double f) {
-	set_mu_2(x, f);
-}
-void norm_random_note_ft4(t_norm_random_note* x, double f) {
 	set_sigma_2(x, f);
+	log_status(x);
 }
 
 // TRIGGERS
 void norm_random_note_bang(t_norm_random_note* x) {
 	outlet_float(x->m_outlet1, x->ft + random_note(x));
+	log_status(x);
 }
 
 void norm_random_note_float(t_norm_random_note* x, double f) {
@@ -164,6 +162,17 @@ double random_note(t_norm_random_note* x) {
 	double a = fmax(1.,ceil(randn(x->mu_1, x->sigma_1)));
 	double b = fmax(1.,ceil(randn(x->mu_2, x->sigma_2)));
 
-	double ratio = fabs(a / b);
+	double ratio = a / b;
 	return round(log(ratio) / log(base));
+}
+
+double sigmoid(double x) {
+	return 1./(1.+exp(-x));
+}
+
+void log_status(t_norm_random_note* x) {
+	object_post((t_object*)x, "mu 1 is %f", x->mu_1);
+	object_post((t_object*)x, "mu 2 is %f", x->mu_2);
+	object_post((t_object*)x, "sigma 1 is %f", x->sigma_1);
+	object_post((t_object*)x, "sigma 2 is %f", x->sigma_2);
 }
