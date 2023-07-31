@@ -69,7 +69,7 @@ void norm_rhythm_ft1(t_norm_rhythm* x, double f) {
 
 void norm_rhythm_bang(t_norm_rhythm* x) {
 	if (x->count <= 0.0) {
-		x->count = round(randn(x->mu, x->sigma));
+		x->count = round(fabsf(randn(x->mu, x->sigma)));
 		outlet_bang(x->m_outlet1);
 	}
 	else {
